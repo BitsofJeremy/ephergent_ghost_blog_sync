@@ -5,7 +5,7 @@ from sqlalchemy import Column, Integer, String, \
 from sqlalchemy.orm import relationship, sessionmaker, declarative_base
 from sqlalchemy import create_engine
 
-engine = create_engine('sqlite:///ghost_posts.db')
+engine = create_engine('sqlite:///ephergent_ghost_posts.db')
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
@@ -63,9 +63,10 @@ class Posts(Base):
         'excerpt': 'String',
         'feature_image': 'String',
         'tags': relationship,
-        'twiiter': Boolean,
+        'twitter': Boolean,
         'warpcast': Boolean,
-        'mastodon': Boolean
+        'mastodon': Boolean,
+        'bluesky': Boolean,
     }
     """
     id = Column(Integer, primary_key=True)
@@ -80,6 +81,7 @@ class Posts(Base):
     twitter = Column(Boolean, default=False)
     warpcast = Column(Boolean, default=False)
     mastodon = Column(Boolean, default=False)
+    bluesky = Column(Boolean, default=False)
 
     # Relationships
     tags = relationship(
@@ -113,20 +115,14 @@ class Posts(Base):
             "tags": self.tags,
             "twitter": self.twitter,
             "warpcast": self.warpcast,
-            "mastodon": self.mastodon
+            "mastodon": self.mastodon,
+            "bluesky": self.bluesky,
         }
-
-
-# def make_session():
-#     engine = create_engine('sqlite:///ghost_posts.db')
-#     Session = sessionmaker(bind=engine)
-#     session = Session()
-#     return session
 
 
 def make_session():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, 'ghost_posts.db')
+    db_path = os.path.join(script_dir, 'ephergent_ghost_posts.db')
     engine = create_engine(f'sqlite:///{db_path}')
     Session = sessionmaker(bind=engine)
     session = Session()

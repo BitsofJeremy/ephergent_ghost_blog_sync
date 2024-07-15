@@ -5,14 +5,18 @@ import os
 from db_models import make_session, Posts, Tags
 from ghost import get
 from twit_it import send_tweet
-from cast_it import send_cast
-from toot_it import send_toot
+from sky_it import send_post_to_sky
+import random
 import time
 from dotenv import load_dotenv
 load_dotenv()
 
 
-WARPCAST_CHANNEL = os.getenv("WARPCAST_CHANNEL")
+def random_sleep(min_minutes=5, max_minutes=30):
+    """Generate a random sleep interval between min_minutes and max_minutes."""
+    seconds = random.randint(min_minutes * 60, max_minutes * 60)
+    print(f"Sleeping for {seconds // 60} minutes and {seconds % 60} seconds")
+    time.sleep(seconds)
 
 
 def make_hashtag(text):
@@ -96,8 +100,8 @@ def main():
         else:
             # send post to twitter
             print("Sending post to Twitter")
-            tweet = f"{post['title']} {hashtags} {post['url']}"
-            # print(f'Tweet Length: {len(tweet)}')
+            tweet = f"{post['title'][:240]} {hashtags} {post['url']}"
+            print(f'Tweet Length: {len(tweet)}')
             print(tweet)
             sent_tweet = send_tweet(status=tweet)
             if sent_tweet:
@@ -107,57 +111,37 @@ def main():
                 sesh.add(p)
                 sesh.commit()
 
-            # Going to sleep for 10 seconds to not
-            # get rate limited on twitter API
-            time.sleep(10)
+            # Going to sleep between 1 and 5 minutes
+            # avoiding rate limiting on twitter API
+            random_sleep(min_minutes=1, max_minutes=5)
 
-        # ### MASTODON ### #
-        # Check if posts exists and tooted
-        post_tooted = sesh.query(Posts).filter(Posts.mastodon).filter(
+        # ### BLUESKY ### #
+        # Check if posts exists and sent to Bluesky
+        post_in_sky = sesh.query(Posts).filter(Posts.bluesky).filter(
             Posts.post_uuid == post['post_uuid']).scalar() is not None
-        if post_tooted:
+        if post_in_sky:
             print(f"This post exists in DB and "
-                  f"tooted:  {post['title']}")
+                  f"posted to Bluesky:  {post['title']}")
         else:
-            # send post to mastodon
-            print("Sending post to Mastodon")
-            toot = f"{post['title']} {hashtags} {post['url']}"
-            print(toot)
-            sent_toot = send_toot(status=toot)
-            if sent_toot:
-                p = sesh.query(Posts).filter(Posts.post_uuid == post['post_uuid']).first()
-                p.mastodon = True
-                sesh.add(p)
-                sesh.commit()
-
-            # Going to sleep for 10 seconds to not
-            # get rate limited on mastodon API
-            time.sleep(10)
-
-        # ### WARPCAST ### #
-        # Check if posts exists and casted
-        post_casted = sesh.query(Posts).filter(Posts.warpcast).filter(
-            Posts.post_uuid == post['post_uuid']).scalar() is not None
-        if post_casted:
-            print(f"This post exists in DB and "
-                  f"casted:  {post['title']}")
-        else:
-            # send post to Warpcast
-            print("Sending post to Warpcast")
-            sent_cast = send_cast(
-                status=post['title'],
+            # send post to Bluesky
+            print("Sending post to Bluesky")
+            sent_sky_post = send_post_to_sky(
+                title=post['title'][:240],
                 link=post['url'],
-                channel=WARPCAST_CHANNEL
+                description=post['excerpt'],
+                image_url=post['feature_image']
             )
-            if sent_cast:
+            if sent_sky_post:
+                # Update the DB we posted this to Bluesky already
                 p = sesh.query(Posts).filter(Posts.post_uuid == post['post_uuid']).first()
-                p.warpcast = True
+                p.bluesky = True
                 sesh.add(p)
                 sesh.commit()
 
-            # Going to sleep for 10 seconds to not
-            # get rate limited on Warpcast API
-            time.sleep(10)
+            # Going to sleep between 1 and 5 min
+            # to avoid getting rate limited or banned
+            # on Bluesky
+            random_sleep(min_minutes=1, max_minutes=5)
 
     # finish
     print("FINISHED SENDING TO SOCIAL MEDIA")

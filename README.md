@@ -1,4 +1,4 @@
-# ghost_blog_sync
+# ephergent_ghost_blog_sync
 
 This is a little app that will grab blog posts from my Ghost blog and then post them to social media via APIs
 
@@ -6,8 +6,8 @@ This is a little app that will grab blog posts from my Ghost blog and then post 
 
 - [x] Warpcast
 - [x] Twitter
-- [x] Mastodon
-- [] BlueSky (?? not sure if this is possible ??)
+- [] Mastodon
+- [x] BlueSky (?? not sure if this is possible ??)
 - [] Threads (?? not sure if this is possible ??)
 - [] LinkedIn (?? Do I bother ??)
 
