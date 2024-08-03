@@ -63,9 +63,7 @@ class Posts(Base):
         'excerpt': 'String',
         'feature_image': 'String',
         'tags': relationship,
-        'twitter': Boolean,
         'warpcast': Boolean,
-        'mastodon': Boolean,
         'bluesky': Boolean,
     }
     """
@@ -78,9 +76,7 @@ class Posts(Base):
     feature_image = Column(String())
 
     # Posted to Social?
-    twitter = Column(Boolean, default=False)
     warpcast = Column(Boolean, default=False)
-    mastodon = Column(Boolean, default=False)
     bluesky = Column(Boolean, default=False)
 
     # Relationships
@@ -113,9 +109,7 @@ class Posts(Base):
             "url": self.url,
             "feature_image": self.feature_image,
             "tags": self.tags,
-            "twitter": self.twitter,
             "warpcast": self.warpcast,
-            "mastodon": self.mastodon,
             "bluesky": self.bluesky,
         }
 

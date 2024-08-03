@@ -4,12 +4,17 @@
 import os
 from db_models import make_session, Posts, Tags
 from ghost import get
-from twit_it import send_tweet
-from sky_it import send_post_to_sky
 import random
 import time
 from dotenv import load_dotenv
+# Social Media post scripts:
+from cast_it import send_cast
+from sky_it import send_post_to_sky
+
 load_dotenv()
+
+
+WARPCAST_CHANNEL = os.getenv("WARPCAST_CHANNEL")
 
 
 def random_sleep(min_minutes=5, max_minutes=30):
@@ -90,30 +95,31 @@ def main():
             hashtags += f'{t} '
         # print(f'Hashtags: \n {hashtags}')
 
-        # ### TWITTER ### #
-        # Check if posts exists and tweeted
-        post_tweeted = sesh.query(Posts).filter(Posts.twitter).filter(
-            Posts.post_uuid == post['post_uuid']).scalar() is not None
-        if post_tweeted:
-            print(f"This post exists in DB and "
-                  f"tweeted:  {post['title']}")
-        else:
-            # send post to twitter
-            print("Sending post to Twitter")
-            tweet = f"{post['title'][:240]} {hashtags} {post['url']}"
-            print(f'Tweet Length: {len(tweet)}')
-            print(tweet)
-            sent_tweet = send_tweet(status=tweet)
-            if sent_tweet:
-                # Update the DB we tweeted this post already
-                p = sesh.query(Posts).filter(Posts.post_uuid == post['post_uuid']).first()
-                p.twitter = True
-                sesh.add(p)
-                sesh.commit()
-
-            # Going to sleep between 1 and 5 minutes
-            # avoiding rate limiting on twitter API
-            random_sleep(min_minutes=1, max_minutes=5)
+        # TODO Get a Warpcast/Farcaster account/channel
+        # # ### WARPCAST ### #
+        # # Check if posts exists and casted
+        # post_casted = sesh.query(Posts).filter(Posts.warpcast).filter(
+        #     Posts.post_uuid == post['post_uuid']).scalar() is not None
+        # if post_casted:
+        #     print(f"This post exists in DB and "
+        #           f"casted:  {post['title']}")
+        # else:
+        #     # send post to Warpcast
+        #     print("Sending post to Warpcast")
+        #     sent_cast = send_cast(
+        #         status=post['title'],
+        #         link=post['url'],
+        #         channel=WARPCAST_CHANNEL
+        #     )
+        #     if sent_cast:
+        #         p = sesh.query(Posts).filter(Posts.post_uuid == post['post_uuid']).first()
+        #         p.warpcast = True
+        #         sesh.add(p)
+        #         sesh.commit()
+        #
+        #     # Going to sleep for 10 seconds to not
+        #     # get rate limited on Warpcast API
+        #     time.sleep(10)
 
         # ### BLUESKY ### #
         # Check if posts exists and sent to Bluesky
