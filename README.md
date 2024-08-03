@@ -6,8 +6,9 @@ Welcome to Ephergent Ghost Blog Sync! This Python application helps you automati
 
 ## Supported Social Media Platforms
 
-- [x] Warpcast
+- [x] Warpcast (Currently disabled for now)
 - [x] Bluesky
+- [ ] Reddit (still debating on adding...)
 
 
 ## Getting Started
